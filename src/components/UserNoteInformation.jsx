@@ -20,33 +20,22 @@ const UserNoteInformation = () => {
     fetchNotes();
   }, [search, category, date]);
 
-  // const fetchNotes = () => {
-  //   setLoading(true);
-  //   Client.get(
-  //     `/note/getuserNote?search=${search}&category=${category}&date=${date}`
-  //   )
-  //     .then((response) =>
-  //        setUserNote(response.data?.userNoteData || []))
-  //     .catch((error) => console.error(error))
-  //     .finally(() => setLoading(false));
-  // };
   const fetchNotes = () => {
     setLoading(true);
     console.log("Fetching notes...");
 
-    // यहाँ पर isPublic को फिक्स नहीं कर रहे हैं क्योंकि पब्लिक और निजी दोनों को लाने के लिए हमने बैकएंड में यह किया है।
     Client.get(
       `/note/getuserNote?search=${search}&category=${category}&date=${date}`
     )
       .then((response) => {
-        console.log("Response from API:", response); // API से आने वाले पूरे रिस्पांस को लॉग करेगा
+        console.log("Response from API:", response);
         setUserNote(response.data?.userNoteData || []);
       })
       .catch((error) => {
-        console.error("Error fetching notes:", error); // अगर एरर आता है तो उसका लॉग
+        console.error("Error fetching notes:", error);
       })
       .finally(() => {
-        console.log("Fetching completed"); // फेचिंग खत्म होने के बाद यह लॉग करेगा
+        console.log("Fetching completed");
         setLoading(false);
       });
   };
@@ -98,17 +87,18 @@ const UserNoteInformation = () => {
 
   return (
     <>
-      {/* Search, Filter & Create Button */}
-      <div className="flex gap-3 mb-3">
+      {/* FILTER SECTION - RESPONSIVE */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-2 mb-4">
         <input
           type="text"
           placeholder="Search Notes..."
-          className="border p-2 w-full"
+          className="border p-2 w-full sm:w-auto flex-1"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
+
         <select
-          className="border p-2"
+          className="border p-2 w-full sm:w-auto"
           value={category}
           onChange={(e) => setCategory(e.target.value)}
         >
@@ -118,21 +108,35 @@ const UserNoteInformation = () => {
           <option value="Study">Study</option>
           <option value="Other">Other</option>
         </select>
+
         <input
           type="date"
-          className="border p-2"
+          className="border p-2 w-full sm:w-auto"
           value={date}
           onChange={(e) => setDate(e.target.value)}
         />
+
         <button
           onClick={() => setModal({ type: "create", data: null })}
-          className="p-2 bg-blue-500 text-white rounded"
+          className="p-2 bg-blue-500 text-white rounded w-full sm:w-auto flex items-center justify-center gap-2"
         >
-          <MdAdd size={24} />
+          <MdAdd size={20} />
+          <span className="text-sm sm:inline">Add</span>
         </button>
       </div>
 
-      {/* Notes List */}
+      {/* MULTIPLE DELETE BUTTON - RESPONSIVE POSITION */}
+      {selectId.length > 0 && (
+        <div className="flex justify-center mb-4">
+          <button
+            onClick={handleAllNoteDelete}
+            className="p-2 bg-red-500 text-white rounded"
+          >
+            Delete Selected ({selectId.length})
+          </button>
+        </div>
+      )}
+
       {loading ? (
         <div className="flex justify-center items-center h-screen">
           <ClipLoader color="black" size={80} />
@@ -146,7 +150,7 @@ const UserNoteInformation = () => {
             >
               <div
                 style={{
-                  backgroundColor: note.isPublic ? "#d1fae5" : "#f3f4f6", // Public notes light green, private notes light gray
+                  backgroundColor: note.isPublic ? "#d1fae5" : "#f3f4f6",
                 }}
                 className="p-3 h-60 overflow-hidden rounded-md mt-7 shadow-2xl relative"
               >
@@ -183,20 +187,9 @@ const UserNoteInformation = () => {
         </div>
       )}
 
-      {/* Multiple Delete Button */}
-      {selectId.length > 0 && (
-        <button
-          onClick={handleAllNoteDelete}
-          className="p-2 bg-red-500 text-white rounded mt-3 fixed top-20 right-10"
-        >
-          Delete Selected
-        </button>
-      )}
-
-      {/* Create / Update Modal */}
       {modal.type && (
         <div className="fixed top-0 left-0 w-screen h-screen bg-black bg-opacity-50 flex justify-center items-center">
-          <div className="p-3 w-[40%] border rounded-md bg-white">
+          <div className="p-3 w-[90%] sm:w-[40%] border rounded-md bg-white">
             <RxCross2 onClick={() => setModal({ type: "", data: null })} />
             <Formik
               initialValues={
@@ -236,7 +229,6 @@ const UserNoteInformation = () => {
                   <option value="Other">Other</option>
                 </Field>
 
-                {/* Public/Private Checkbox */}
                 <div className="flex items-center mt-3">
                   <Field type="checkbox" name="isPublic" className="mr-2" />
                   <label htmlFor="isPublic">Make this note public</label>
