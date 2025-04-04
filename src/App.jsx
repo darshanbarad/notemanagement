@@ -96,13 +96,19 @@ const App = () => {
 
       {/* ✅ Toast Container globally */}
       <ToastContainer
-        position="top-right"
+        position="top-center"
         autoClose={3000}
         hideProgressBar={false}
         closeOnClick
         pauseOnHover
         draggable
         theme="colored"
+        style={{
+          fontSize: "14px",
+          width: "90%",
+          maxWidth: "400px",
+          margin: "auto",
+        }}
       />
     </>
   );
