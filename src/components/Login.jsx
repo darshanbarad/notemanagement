@@ -182,6 +182,39 @@ const Login = ({ setToken }) => {
       .min(8, "Password must be at least 8 characters"),
   });
 
+  // const handleSubmit = async (values, { setErrors }) => {
+  //   try {
+  //     const response = await axios.post(
+  //       "http://localhost:5000/api/login",
+  //       values
+  //     );
+
+  //     if (response?.data?.token) {
+  //       localStorage.setItem("token", response.data.token);
+  //       setToken(response.data.token);
+  //       toast.success("Login successful! 🎉", {
+  //         position: "top-right",
+  //         autoClose: 3000,
+  //       });
+  //       navigate("/user-note");
+  //     }
+  //   } catch (error) {
+  //     toast.error("Login failed. Please try again.", {
+  //       position: "top-right",
+  //       autoClose: 3000,
+  //     });
+
+  //     if (error.response?.data?.message) {
+  //       const errorMessage = error.response.data.message;
+  //       if (errorMessage.includes("User not found")) {
+  //         setErrors({ email: "No account found with this email" });
+  //       } else if (errorMessage.includes("Invalid credentials")) {
+  //         setErrors({ password: "Incorrect password" });
+  //       }
+  //     }
+  //   }
+  // };
+
   const handleSubmit = async (values, { setErrors }) => {
     try {
       const response = await axios.post(
@@ -192,29 +225,38 @@ const Login = ({ setToken }) => {
       if (response?.data?.token) {
         localStorage.setItem("token", response.data.token);
         setToken(response.data.token);
-        toast.success("Login successful! 🎉", {
+
+        // ✅ Show toast notification
+        toast.success("Login Successful!", {
           position: "top-right",
           autoClose: 3000,
+          theme: "colored",
         });
-        navigate("/user-note");
+
+        // ✅ Navigate after delay
+        setTimeout(() => {
+          navigate("/user-note");
+        }, 1000);
       }
     } catch (error) {
-      toast.error("Login failed. Please try again.", {
-        position: "top-right",
-        autoClose: 3000,
-      });
-
       if (error.response?.data?.message) {
         const errorMessage = error.response.data.message;
+
         if (errorMessage.includes("User not found")) {
           setErrors({ email: "No account found with this email" });
         } else if (errorMessage.includes("Invalid credentials")) {
           setErrors({ password: "Incorrect password" });
         }
+
+        // ✅ Optional: show error toast
+        toast.error("Login failed! Please check your credentials.", {
+          position: "top-right",
+          autoClose: 3000,
+          theme: "colored",
+        });
       }
     }
   };
-
   return (
     <div className="w-full h-screen flex justify-center items-center bg-gray-100">
       <div className="w-full max-w-md p-8 bg-white shadow-lg rounded-lg">
