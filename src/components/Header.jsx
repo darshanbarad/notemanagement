@@ -24,6 +24,10 @@ const Header = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [btn]);
 
+  useEffect(() => {
+    handleAuthapi();
+  }, []);
+
   const handleAuthapi = () => {
     try {
       Client.get("/auth/authenticate")
@@ -42,9 +46,16 @@ const Header = () => {
     }
   };
 
-  const handleClickLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/login");
+  const handleClickLogout = async () => {
+    try {
+      await Client.post("/api/logoutUser");
+      localStorage.removeItem("token");
+      navigate("/login");
+    } catch (error) {
+      console.error("Logout error:", error);
+      localStorage.removeItem("token");
+      navigate("/login");
+    }
   };
 
   const handleDeleteAccount = () => {
