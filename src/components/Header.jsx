@@ -88,7 +88,7 @@ const Header = () => {
       <header className="shadow sticky top-0 z-50 bg-white text-black">
         <nav className="max-w-screen-xl mx-auto px-4 lg:px-6 py-2.5 flex justify-between items-center">
           {/* Logo */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center ">
             <span className="bg-black text-orange-500 text-2xl rounded-full h-8 w-8 flex items-center justify-center">
               D
             </span>
