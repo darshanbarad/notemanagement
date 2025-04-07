@@ -44,7 +44,7 @@ const Login = ({ setToken }) => {
         toast.success("Login Successful! 🎉");
 
         setTimeout(() => {
-          navigate("/user-note");
+          navigate("/");
         }, 1000);
       }
     } catch (error) {
@@ -65,7 +65,7 @@ const Login = ({ setToken }) => {
   };
 
   return (
-    <div className="w-full h-screen flex justify-center items-center bg-gray-100 overflow-auto px-4">
+    <div className="w-fll h-screen flex justify-center items-center bg-gray-100 overflow-auto px-4">
       <div className="w-full max-w-md p-8 bg-white shadow-lg rounded-lg z-10">
         <Formik
           initialValues={{ email: "", password: "" }}

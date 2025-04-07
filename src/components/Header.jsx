@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { BsThreeDotsVertical, BsList } from "react-icons/bs";
-import axios from "axios";
 import Client from "../axios/AxiosConsumer";
 import { toast } from "react-toastify";
 
@@ -62,25 +61,19 @@ const Header = () => {
     }
   };
 
-  const handleDeleteAccount = () => {
-    axios
-      .delete(
-        `https://react-router-back-end-e38b.vercel.app/user/accountdelete/${setId}`,
-        {
-          headers: {
-            authorization: localStorage.getItem("token"),
-          },
-        }
-      )
-      .then(() => {
-        localStorage.removeItem("token");
+  const handleDeleteAccount = async () => {
+    try {
+      await Client.delete("/api/delete-account"); // <-- Client का use किया
+      localStorage.removeItem("token");
+      toast.success("Account deleted successfully");
+      navigate("/login");
+    } catch (error) {
+      console.error("Error deleting account:", error);
+      toast.error("Error deleting account");
+      if (error.response?.data?.message.includes("Authentication required")) {
         navigate("/login");
-      })
-      .catch((error) => {
-        if (error.response?.data?.message.includes("Authentication required")) {
-          navigate("/login");
-        }
-      });
+      }
+    }
   };
 
   return (
@@ -95,20 +88,9 @@ const Header = () => {
             <p className="text-xl font-extrabold text-orange-400">arshan</p>
           </div>
 
-          {/* Desktop Navigation */}
           <div className="hidden lg:flex gap-8 items-center">
             <NavLink
               to="/"
-              className={({ isActive }) =>
-                `text-base font-medium ${
-                  isActive ? "text-orange-600" : "text-gray-700"
-                } hover:text-orange-600 transition duration-200`
-              }
-            >
-              Home
-            </NavLink>
-            <NavLink
-              to="/user-note"
               className={({ isActive }) =>
                 `text-base font-medium ${
                   isActive ? "text-orange-600" : "text-gray-700"
@@ -122,7 +104,6 @@ const Header = () => {
             </span>
           </div>
 
-          {/* Right side */}
           <div className="flex items-center gap-4">
             {/* Mobile Menu Button */}
             <button
@@ -159,11 +140,14 @@ const Header = () => {
                     >
                       Delete Account
                     </button>
-                    <Link to="/update" className="block hover:text-red-400">
+                    <Link
+                      to="/change-password"
+                      className="block hover:text-red-400"
+                    >
                       Change Password
                     </Link>
                     <Link
-                      to="/updateprofile"
+                      to="/update-profile"
                       className="block hover:text-red-400"
                     >
                       Change Profile
@@ -204,15 +188,6 @@ const Header = () => {
                 onClick={() => setMobileMenu(false)}
                 className="hover:text-orange-500"
               >
-                Home
-              </NavLink>
-            </li>
-            <li>
-              <NavLink
-                to="/user-note"
-                onClick={() => setMobileMenu(false)}
-                className="hover:text-orange-500"
-              >
                 UserNote
               </NavLink>
             </li>
@@ -229,14 +204,14 @@ const Header = () => {
               Delete Account
             </button>
             <Link
-              to="/update"
+              to="/change-password"
               className="block hover:text-orange-500"
               onClick={() => setMobileMenu(false)}
             >
               Change Password
             </Link>
             <Link
-              to="/updateprofile"
+              to="/update-profile"
               className="block hover:text-orange-500"
               onClick={() => setMobileMenu(false)}
             >
