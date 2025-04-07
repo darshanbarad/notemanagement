@@ -7,7 +7,7 @@ import { IoIosEyeOff } from "react-icons/io";
 import * as Yup from "yup";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { ClipLoader } from "react-spinners"; // ✅ Spinner import
+import { ClipLoader } from "react-spinners";
 
 const Login = ({ setToken }) => {
   useEffect(() => {
@@ -81,7 +81,7 @@ const Login = ({ setToken }) => {
               {/* Email */}
               <div className="relative mt-6">
                 <input
-                  className="peer w-full h-12 border border-gray-300 rounded-lg px-3 pt-3.5 pb-1 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-[16px]"
+                  className="peer w-full h-12 border border-gray-300 rounded-lg px-3 pt-3.5 pb-1 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-[16px] "
                   type="email"
                   name="email"
                   onChange={handleChange}
@@ -94,7 +94,7 @@ const Login = ({ setToken }) => {
                     values.email || document.activeElement.name === "email"
                       ? "-top-2 text-sm text-blue-500"
                       : "top-3.5 text-gray-400"
-                  } peer-focus:-top-2 peer-focus:text-sm peer-focus:text-blue-500`}
+                  } peer-focus:-top-2 peer-focus:text-sm peer-focus:text-blue-500 pointer-events-none`}
                 >
                   E-mail
                 </label>
@@ -107,7 +107,7 @@ const Login = ({ setToken }) => {
               {/* Password */}
               <div className="relative mt-4">
                 <input
-                  className="peer w-full h-12 border border-gray-300 rounded-lg px-3 pt-3.5 pb-1 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-[16px]"
+                  className="peer w-full h-12 border border-gray-300 rounded-lg px-3 pt-3.5 pb-1 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-[16px] "
                   type={showPassword ? "text" : "password"}
                   name="password"
                   onChange={handleChange}
@@ -121,7 +121,7 @@ const Login = ({ setToken }) => {
                     document.activeElement.name === "password"
                       ? "-top-2 text-sm text-blue-500"
                       : "top-3.5 text-gray-400"
-                  } peer-focus:-top-2 peer-focus:text-sm peer-focus:text-blue-500`}
+                  } peer-focus:-top-2 peer-focus:text-sm peer-focus:text-blue-500 pointer-events-none`}
                 >
                   Password
                 </label>
