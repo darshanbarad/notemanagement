@@ -20,12 +20,9 @@ const UserNoteInformation = () => {
   const [category, setCategory] = useState("");
   const [date, setDate] = useState("");
 
-  // ✅ Set Reminder Toast on exact time
-  // ✅ Set Reminder Toast on exact IST time
   const handleReminderToast = (note) => {
     if (!note.reminder) return;
 
-    // Convert backend UTC time into IST (Asia/Kolkata)
     const reminderTime = new Date(
       new Date(note.reminder).toLocaleString("en-US", {
         timeZone: "Asia/Kolkata",
@@ -122,13 +119,12 @@ const UserNoteInformation = () => {
     setActionLoading(true);
     try {
       await Client.patch(`/note/updateNote/${values._id}`, values);
-      setUserNote((prev) =>
-        prev.map((note) =>
-          note._id === values._id ? { ...note, ...values } : note
-        )
-      );
-      handleReminderToast(values);
+
+      await fetchNotes();
+
       setModal({ type: "", data: null });
+
+      handleReminderToast(values);
     } catch (error) {
       setErrorMessage("Error updating note");
     } finally {
