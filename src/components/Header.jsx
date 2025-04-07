@@ -1,15 +1,16 @@
-//---------------------------------------------------------------------\
 import React, { useEffect, useRef, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { BsThreeDotsVertical, BsList } from "react-icons/bs";
 import axios from "axios";
 import Client from "../axios/AxiosConsumer";
+import { toast } from "react-toastify";
 
 const Header = () => {
   const [subMenu, setSubMenu] = useState(false);
   const [mobileMenu, setMobileMenu] = useState(false);
   const [userEmail, setUserEmail] = useState();
   const [setId, setUserId] = useState();
+  const [logoutLoading, setLogoutLoading] = useState(false);
 
   const btn = useRef();
   const navigate = useNavigate();
@@ -32,7 +33,6 @@ const Header = () => {
     try {
       Client.get("/auth/authenticate")
         .then((response) => {
-          console.log("response: ", response);
           setUserId(response?.data?.decodedToken.id);
           setUserEmail(response?.data?.decodedToken.email);
         })
@@ -48,13 +48,20 @@ const Header = () => {
 
   const handleClickLogout = async () => {
     try {
+      setLogoutLoading(true);
+
       await Client.post("/api/logoutUser");
       localStorage.removeItem("token");
+
+      toast.success("Logout Successfully");
+
       navigate("/login");
     } catch (error) {
       console.error("Logout error:", error);
       localStorage.removeItem("token");
       navigate("/login");
+    } finally {
+      setLogoutLoading(false);
     }
   };
 
@@ -146,7 +153,12 @@ const Header = () => {
                     className="absolute bg-black rounded-sm capitalize text-center text-white border-2 w-56 leading-8 right-0 p-3 top-[50px]"
                   >
                     <div>
-                      <button onClick={handleClickLogout}>Log Out</button>
+                      <button
+                        onClick={handleClickLogout}
+                        disabled={logoutLoading}
+                      >
+                        {logoutLoading ? "Logging out..." : "Log Out"}
+                      </button>
                     </div>
                     <div>
                       <button onClick={handleDeleteAccount}>
@@ -188,11 +200,6 @@ const Header = () => {
           ✖ Close
         </button>
         <ul className="space-y-4 p-4">
-          {/* <li className=" hover:text-red-500 z-50">
-            <NavLink to="/home" onClick={() => setMobileMenu(false)}>
-              Home
-            </NavLink>
-          </li> */}
           <li className=" hover:text-red-500">
             <NavLink
               to="/usernoteinformation"
@@ -226,9 +233,10 @@ const Header = () => {
           </Link>
           <button
             onClick={handleClickLogout}
+            disabled={logoutLoading}
             className="block w-full p-1 text-center hover:rounded-md hover:bg-red-500 hover:text-white"
           >
-            Log Out
+            {logoutLoading ? "Logging out..." : "Log Out"}
           </button>
         </div>
       </div>
