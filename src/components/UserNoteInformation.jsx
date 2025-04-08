@@ -20,42 +20,6 @@ const UserNoteInformation = () => {
   const [category, setCategory] = useState("");
   const [date, setDate] = useState("");
 
-  const handleReminderToast = (note) => {
-    if (!note.reminder) return;
-
-    const reminderTime = new Date(
-      new Date(note.reminder).toLocaleString("en-US", {
-        timeZone: "Asia/Kolkata",
-      })
-    );
-    const currentTime = new Date(
-      new Date().toLocaleString("en-US", {
-        timeZone: "Asia/Kolkata",
-      })
-    );
-
-    const timeDiff = reminderTime.getTime() - currentTime.getTime();
-
-    console.log("📅 Reminder Time (IST):", reminderTime);
-    console.log("🕰️ Current Time (IST):", currentTime);
-    console.log("⏳ Time Difference (ms):", timeDiff);
-
-    const formattedTime = reminderTime.toLocaleString("en-IN", {
-      hour: "numeric",
-      minute: "numeric",
-      hour12: true,
-    });
-
-    if (timeDiff > 0) {
-      setTimeout(() => {
-        toast.info(`⏰ Reminder: ${note.title} - ${formattedTime}`, {
-          position: "top-right",
-          autoClose: 5000,
-        });
-      }, timeDiff);
-    }
-  };
-
   useEffect(() => {
     fetchNotes();
   }, [search, category, date]);
@@ -63,20 +27,16 @@ const UserNoteInformation = () => {
   const fetchNotes = () => {
     setLoading(true);
     Client.get(
-      `/note/getuserNote?search=${search}&category=${category}&date=${date}`
+      `/note/getuserNote?search=${search}&category=${category}&noteDate=${date}`
     )
       .then((response) => {
-        const notes = response.data?.userNoteData || [];
+        const notes = response.data?.userNotes || [];
         setUserNote(notes);
-
-        notes.forEach((note) => handleReminderToast(note));
       })
       .catch((error) => {
         console.error("Error fetching notes:", error);
       })
-      .finally(() => {
-        setLoading(false);
-      });
+      .finally(() => setLoading(false));
   };
 
   const handleNoteDelete = (id) => {
@@ -106,7 +66,6 @@ const UserNoteInformation = () => {
       const response = await Client.post("/note/createNote", values);
       const newNote = response.data?.userNote;
       setUserNote((prev) => [...prev, newNote]);
-      handleReminderToast(newNote);
       setModal({ type: "", data: null });
     } catch (error) {
       setErrorMessage("Error creating note");
@@ -119,12 +78,8 @@ const UserNoteInformation = () => {
     setActionLoading(true);
     try {
       await Client.patch(`/note/updateNote/${values._id}`, values);
-
       await fetchNotes();
-
       setModal({ type: "", data: null });
-
-      handleReminderToast(values);
     } catch (error) {
       setErrorMessage("Error updating note");
     } finally {
@@ -139,19 +94,21 @@ const UserNoteInformation = () => {
     isPublic: Yup.boolean(),
     noteDate: Yup.date().required("Date is required"),
   });
+
   return (
-    <>
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-2 mb-4 px-3">
+    <div className="p-4 max-w-screen-xl mx-auto">
+      {/* Search, Filter, and Add Button Bar */}
+      <div className="flex flex-wrap sm:flex-nowrap gap-3 mb-6 items-end">
         <input
           type="text"
           placeholder="Search Notes..."
-          className="border p-2 w-full sm:w-auto flex-1"
+          className="border p-2 rounded w-full sm:w-1/3"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
 
         <select
-          className="border p-2 w-full sm:w-auto"
+          className="border p-2 rounded w-full sm:w-1/3"
           value={category}
           onChange={(e) => setCategory(e.target.value)}
         >
@@ -164,85 +121,96 @@ const UserNoteInformation = () => {
 
         <input
           type="date"
-          className="border p-2 w-full sm:w-auto"
+          className="border p-2 rounded w-full sm:w-1/3"
           value={date}
           onChange={(e) => setDate(e.target.value)}
         />
 
         <button
           onClick={() => setModal({ type: "create", data: null })}
-          className="p-2 bg-blue-500 text-white rounded w-full sm:w-auto flex items-center justify-center gap-2"
+          className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white p-2 px-4 rounded shadow hover:opacity-90 w-full sm:w-1/4"
         >
-          <MdAdd size={20} />
-          <span className="text-sm sm:inline">Add</span>
+          <MdAdd size={20} className="inline mr-1" /> Add Note
         </button>
       </div>
 
+      {/* Multiple Delete Button */}
       {selectId.length > 0 && (
-        <div className="flex justify-center mb-4 px-3">
+        <div className="text-center mb-4">
           <button
             onClick={handleAllNoteDelete}
-            className="p-2 bg-red-500 text-white rounded"
+            className="bg-red-600 text-white px-4 py-2 rounded shadow hover:bg-red-700"
           >
             Delete Selected ({selectId.length})
           </button>
         </div>
       )}
 
+      {/* Notes Grid */}
       {loading || actionLoading ? (
-        <div className="flex justify-center items-center h-screen">
-          <ClipLoader color="black" size={80} />
+        <div className="flex justify-center items-center h-60">
+          <ClipLoader color="black" size={60} />
         </div>
       ) : (
-        <div className="flex flex-wrap relative bg-slate-100 h-auto px-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {userNote.map((note) => (
             <div
               key={note._id}
-              className="w-full sm:w-1/2 md:w-1/3 lg:w-1/4 p-4"
+              className={`relative rounded-xl p-4 shadow-md overflow-hidden border-2 ${
+                note.isPublic
+                  ? "bg-green-50 border-green-400"
+                  : "bg-white border-gray-300"
+              }`}
             >
-              <div
-                style={{
-                  backgroundColor: note.isPublic ? "#d1fae5" : "#f3f4f6",
-                }}
-                className="p-3 h-60 overflow-hidden rounded-md mt-7 shadow-2xl relative"
-              >
-                <div className="flex justify-end space-x-3 items-center absolute top-3 right-3">
-                  <input
-                    type="checkbox"
-                    checked={selectId.includes(note._id)}
-                    onChange={(e) =>
-                      setSelectId((prev) =>
-                        e.target.checked
-                          ? [...prev, note._id]
-                          : prev.filter((id) => id !== note._id)
-                      )
-                    }
-                  />
-                  <button
-                    onClick={() => setModal({ type: "update", data: note })}
-                  >
-                    <MdEdit />
-                  </button>
-                  <button onClick={() => handleNoteDelete(note._id)}>
-                    <RiDeleteBin6Line />
-                  </button>
-                </div>
-                <div className="mt-12">
-                  <h2 className="font-bold text-2xl mb-3 capitalize">
-                    {note.title}
-                  </h2>
-                  <p className="capitalize">{note.content}</p>
-                </div>
+              <div className="absolute top-2 right-2 flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={selectId.includes(note._id)}
+                  onChange={(e) =>
+                    setSelectId((prev) =>
+                      e.target.checked
+                        ? [...prev, note._id]
+                        : prev.filter((id) => id !== note._id)
+                    )
+                  }
+                />
+                <button
+                  className="hover:text-blue-500"
+                  onClick={() => setModal({ type: "update", data: note })}
+                >
+                  <MdEdit />
+                </button>
+                <button
+                  className="hover:text-red-500"
+                  onClick={() => handleNoteDelete(note._id)}
+                >
+                  <RiDeleteBin6Line />
+                </button>
+              </div>
+              <div className="mt-8">
+                <h2 className="text-xl font-semibold mb-2 break-words">
+                  {note.title}
+                </h2>
+                <p className="text-gray-700 break-words">{note.content}</p>
+                <p className="text-sm text-gray-500 mt-2">
+                  Date: {new Date(note.noteDate).toLocaleDateString()}
+                </p>
               </div>
             </div>
           ))}
         </div>
       )}
 
+      {/* Modal Form */}
       {modal.type && (
-        <div className="fixed top-0 left-0 w-screen h-screen backdrop-blur-sm bg-opacity-50 flex justify-center items-center">
-          <div className="p-3 w-[90%] sm:w-[40%] border rounded-md bg-white">
-            <RxCross2 onClick={() => setModal({ type: "", data: null })} />
+        <div className="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm flex justify-center items-center z-50">
+          <div className="bg-white rounded-xl shadow-lg p-6 w-[90%] sm:w-[500px]">
+            <div className="flex justify-end mb-2">
+              <RxCross2
+                onClick={() => setModal({ type: "", data: null })}
+                className="cursor-pointer text-xl hover:text-red-500"
+              />
+            </div>
             <Formik
               initialValues={
                 modal.data || {
@@ -251,7 +219,6 @@ const UserNoteInformation = () => {
                   category: "",
                   isPublic: false,
                   noteDate: "",
-                  reminder: "",
                 }
               }
               validationSchema={validationSchema}
@@ -260,7 +227,7 @@ const UserNoteInformation = () => {
               }
             >
               {({ errors, touched }) => (
-                <Form>
+                <Form className="space-y-3">
                   <Field
                     type="text"
                     name="title"
@@ -270,19 +237,19 @@ const UserNoteInformation = () => {
                   <ErrorMessage
                     name="title"
                     component="div"
-                    className="text-red-500 text-sm mb-1"
+                    className="text-red-500 text-sm"
                   />
 
                   <Field
                     as="textarea"
                     name="content"
-                    placeholder="Note"
-                    className="w-full p-2 border rounded h-32 resize-none"
+                    placeholder="Note content"
+                    className="w-full p-2 border rounded h-28 resize-none"
                   />
                   <ErrorMessage
                     name="content"
                     component="div"
-                    className="text-red-500 text-sm mb-1"
+                    className="text-red-500 text-sm"
                   />
 
                   <Field
@@ -299,43 +266,32 @@ const UserNoteInformation = () => {
                   <ErrorMessage
                     name="category"
                     component="div"
-                    className="text-red-500 text-sm mb-1"
+                    className="text-red-500 text-sm"
                   />
 
                   <Field
                     type="date"
                     name="noteDate"
-                    className="w-full p-2 border rounded mt-2"
+                    className="w-full p-2 border rounded"
                   />
                   <ErrorMessage
                     name="noteDate"
                     component="div"
-                    className="text-red-500 text-sm mb-1"
+                    className="text-red-500 text-sm"
                   />
 
-                  <Field
-                    type="datetime-local"
-                    name="reminder"
-                    className="w-full p-2 border rounded mt-2"
-                  />
-                  <ErrorMessage
-                    name="reminder"
-                    component="div"
-                    className="text-red-500 text-sm mb-1"
-                  />
-
-                  <div className="flex items-center mt-3">
+                  <div className="flex items-center">
                     <Field type="checkbox" name="isPublic" className="mr-2" />
                     <label htmlFor="isPublic">Make this note public</label>
                   </div>
 
                   <button
                     type="submit"
-                    className="p-2 bg-blue-500 text-white rounded mt-3 w-full flex justify-center items-center gap-2"
+                    className="w-full bg-blue-500 text-white py-2 rounded hover:opacity-90 flex justify-center items-center gap-2"
                     disabled={actionLoading}
                   >
                     {actionLoading ? (
-                      <ClipLoader size={20} color="#ffffff" />
+                      <ClipLoader size={20} color="#fff" />
                     ) : modal.type === "create" ? (
                       "Add Note"
                     ) : (
@@ -350,7 +306,7 @@ const UserNoteInformation = () => {
       )}
 
       <ToastContainer position="top-right" autoClose={3000} />
-    </>
+    </div>
   );
 };
 
