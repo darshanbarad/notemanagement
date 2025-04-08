@@ -23,15 +23,22 @@ const UserNoteInformation = () => {
   useEffect(() => {
     fetchNotes();
   }, [search, category, date]);
-
   const fetchNotes = () => {
     setLoading(true);
     Client.get(
       `/note/getuserNote?search=${search}&category=${category}&noteDate=${date}`
     )
       .then((response) => {
-        const notes = response.data?.userNotes || [];
-        setUserNote(notes);
+        const userNotes = response.data?.userNotes || [];
+        const publicNotes = response.data?.publicNotes || [];
+
+        // Combine both arrays
+        const allNotes = [...userNotes, ...publicNotes];
+
+        // Optional: sort by date or any other logic
+        allNotes.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+        setUserNote(allNotes);
       })
       .catch((error) => {
         console.error("Error fetching notes:", error);
